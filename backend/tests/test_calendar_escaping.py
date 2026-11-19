@@ -28,8 +28,9 @@ class ICalendarEscapingTests(unittest.TestCase):
             "end_dt": "2026-11-20T11:30:00",
         }])
 
-        self.assertEqual(content.count("BEGIN:VEVENT"), 1)
-        self.assertEqual(content.count("END:VEVENT"), 1)
+        physical_lines = content.split("\r\n")
+        self.assertEqual(physical_lines.count("BEGIN:VEVENT"), 1)
+        self.assertEqual(physical_lines.count("END:VEVENT"), 1)
         self.assertIn(r"SUMMARY:Study\nBEGIN:VEVENT", content)
         self.assertIn(r"DESCRIPTION:First line\nSecond line", content)
 
