@@ -6,6 +6,7 @@ from app.models.subject import Subject
 from app.models.study_plan import StudyPlan, DailyTask
 from app.extensions import db
 from app.services import gemini_service
+from app.services.plan_validation import normalize_plan_parameters
 
 planner_bp = Blueprint("planner", __name__)
 
@@ -14,8 +15,15 @@ planner_bp = Blueprint("planner", __name__)
 @firebase_required
 def generate_plan():
     data = request.get_json() or {}
-    hours_per_day = float(data.get("hours_per_day") or 4.0)
-    days          = int(data.get("days") or 14)
+    raw_hours = data.get("hours_per_day", 4.0)
+    raw_days = data.get("days", 14)
+    try:
+        hours_per_day, days = normalize_plan_parameters(
+            4.0 if raw_hours is None else raw_hours,
+            14 if raw_days is None else raw_days,
+        )
+    except (TypeError, ValueError) as exc:
+        return error(str(exc), 400)
 
     subjects = Subject.query.filter_by(user_id=g.current_user.id).all()
     if not subjects:
