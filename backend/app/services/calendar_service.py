@@ -25,6 +25,17 @@ def get_google_calendar_add_url(title: str, start_dt: datetime, end_dt: datetime
     return f"{base}?{urllib.parse.urlencode(params)}"
 
 
+def _escape_ics_text(value: object) -> str:
+    """Escape text values according to the iCalendar TEXT value rules."""
+    text = str(value)
+    return (text.replace("\\", "\\\\")
+                .replace("\r\n", "\\n")
+                .replace("\r", "\\n")
+                .replace("\n", "\\n")
+                .replace(",", "\\,")
+                .replace(";", "\\;"))
+
+
 def generate_ics_content(events: list) -> str:
     """
     Generate an .ics file content for a list of study events.
@@ -52,8 +63,8 @@ def generate_ics_content(events: list) -> str:
             f"UID:{uid}@studyai",
             f"DTSTART:{start.strftime('%Y%m%dT%H%M%S')}",
             f"DTEND:{end.strftime('%Y%m%dT%H%M%S')}",
-            f"SUMMARY:{ev['title']}",
-            f"DESCRIPTION:{ev.get('description', '')}",
+            f"SUMMARY:{_escape_ics_text(ev['title'])}",
+            f"DESCRIPTION:{_escape_ics_text(ev.get('description', ''))}",
             "STATUS:CONFIRMED",
             "END:VEVENT",
         ]
