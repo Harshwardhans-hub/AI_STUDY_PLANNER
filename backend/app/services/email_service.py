@@ -3,6 +3,7 @@ Email reminder service using SMTP (Gmail or any SMTP server).
 Configure SMTP settings in backend/.env
 """
 import smtplib
+from html import escape
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from flask import current_app
@@ -25,7 +26,8 @@ def send_study_reminder(to_email: str, user_name: str, tasks: list) -> bool:
         return False
 
     tasks_html = "".join(
-        f"<li><strong>{t['subject_name']}</strong> — {t['duration_hours']}h — {t.get('focus', '')}</li>"
+        f"<li><strong>{escape(str(t['subject_name']))}</strong> — "
+        f"{escape(str(t['duration_hours']))}h — {escape(str(t.get('focus', '')))}</li>"
         for t in tasks
     )
 
@@ -35,7 +37,7 @@ def send_study_reminder(to_email: str, user_name: str, tasks: list) -> bool:
     <html><body style="font-family: sans-serif; background:#0f0f15; color:#e2e8f0; padding:20px;">
       <div style="max-width:600px; margin:0 auto; background:#1a1a2e; border-radius:16px; padding:32px; border:1px solid rgba(99,102,241,0.2);">
         <h1 style="color:#818cf8; margin-bottom:8px;">📚 Daily Study Plan</h1>
-        <p style="color:#94a3b8;">Hi <strong style="color:#e2e8f0;">{user_name}</strong>, here's your study schedule for today!</p>
+        <p style="color:#94a3b8;">Hi <strong style="color:#e2e8f0;">{escape(str(user_name))}</strong>, here's your study schedule for today!</p>
         <div style="background:#111827; border-radius:12px; padding:20px; margin:20px 0;">
           <p style="color:#10b981; font-weight:600; margin-bottom:12px;">Today's Tasks ({total_hours:.1f}h total):</p>
           <ul style="color:#94a3b8; line-height:2;">
@@ -82,8 +84,8 @@ def send_exam_reminder(to_email: str, user_name: str, subject_name: str, days_un
     <html><body style="font-family: sans-serif; background:#0f0f15; color:#e2e8f0; padding:20px;">
       <div style="max-width:600px; margin:0 auto; background:#1a1a2e; border-radius:16px; padding:32px;">
         <h1 style="color:#f59e0b;">{urgency} Exam Alert!</h1>
-        <p>Hi <strong>{user_name}</strong>,</p>
-        <p>Your <strong style="color:#818cf8;">{subject_name}</strong> exam is in
+        <p>Hi <strong>{escape(str(user_name))}</strong>,</p>
+        <p>Your <strong style="color:#818cf8;">{escape(str(subject_name))}</strong> exam is in
            <strong style="color:{'#ef4444' if days_until <= 1 else '#f59e0b'};">{days_until} day{'s' if days_until != 1 else ''}</strong>!</p>
         <p style="color:#94a3b8;">Open StudyAI to review your study plan and make sure you're on track.</p>
         <a href="http://localhost:5173/planner" style="display:inline-block; background:#10b981; color:white; padding:12px 24px; border-radius:8px; text-decoration:none; margin-top:16px;">
